@@ -15,9 +15,18 @@ import {
   zodSupportsCoerce,
 } from '../utils/zod';
 
-const zodSchemaToOpenApiSchemaObject = (zodSchema: z.ZodType): OpenAPIV3.SchemaObject => {
+const zodSchemaToOpenApiSchemaObject = (zodSchema: z.ZodType, components?: Record<string, z.AnyZodObject>): OpenAPIV3.SchemaObject => {
+  console.log("zodSchemaToOpenApiSchemaObject")
   // FIXME: https://github.com/StefanTerdell/zod-to-json-schema/issues/35
-  return zodToJsonSchema(zodSchema, { target: 'openApi3', $refStrategy: 'none' }) as any;
+  const opts: Parameters<typeof zodToJsonSchema>[1] = {
+    target: 'openApi3',
+    $refStrategy: 'root',
+  }
+  if (components) {
+    opts.definitions = components;
+    opts.definitionPath = 'components/schemas';
+  }
+  return zodToJsonSchema(zodSchema, opts) as any;
 };
 
 export const getParameterObjects = (
